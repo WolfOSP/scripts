@@ -3,7 +3,7 @@ git config --global user.email "virajv2k@gmail.com"
 cd $HOME
 export ARCH=arm64
 export KERNELDIR=$HOME/kernel_asus_sdm660-1
-export KERNELNAME=test
+export KERNELNAME=WOLF
 export KBUILD_BUILD_USER="ADevDX"
 sed -i '$d' $HOME/.bashrc
 install-package ccache bc libncurses5-dev git-core gnupg flex bison gperf build-essential zip curl libc6-dev ncurses-dev && echo 'export PATH="/usr/lib/ccache:$PATH"' | tee -a ~/.bashrc &&source ~/.bashrc && echo $PATH
