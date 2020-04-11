@@ -2,7 +2,7 @@ git config --global user.name "VirajKanse"
 git config --global user.email "virajv2k@gmail.com"
 cd $HOME
 export ARCH=arm64
-export KERNELDIR=$HOME/kernel_asus_sdm660-1
+export KERNELDIR=$HOME/kernel_asus_sdm660-HMP
 export KERNELNAME=WOLF
 export KBUILD_BUILD_USER="ADevDX"
 sed -i '$d' $HOME/.bashrc
