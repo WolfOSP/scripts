@@ -13,7 +13,7 @@ wget https://releases.linaro.org/components/toolchain/binaries/latest-7/aarch64-
 tar -xvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
 rm gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
 rm -rf $HOME/{.phpbrew,.rbenv}
-cd kernel_asus_sdm660-1
+cd kernel_asus_sdm660-HMP
 rm wolf.sh
 curl https://raw.githubusercontent.com/WolfOSP/scripts/master/wolf.sh --output wolf.sh
 chmod +x wolf.sh
