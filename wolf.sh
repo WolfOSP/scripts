@@ -14,7 +14,6 @@ if [[ -z ${KERNELDIR} ]]; then
     exit 1
 fi
 
-
 ##################################################
 #               End Initial Checks               #
 ##################################################
@@ -38,10 +37,13 @@ function check_toolchain() {
   fi
 }
 
-function version() {
-
-  $(grep "^CONFIG_LOCALVERSION" arch/arm64/configs/X00T_defconfig | cut -d "=" -f2 | tr -d '"';
+function send_zip() {
+	op1=$(curl --max-time 20 --upload-file $ZIP_DIR/$ZIPNAME https://transfer.sh/ 2> /dev/null)
+	op2=$(curl --max-time 20 -F file=@$ZIP_DIR/$ZIPNAME https://0x0.st 2> /dev/null)
+	echo "transfer.sh -> "$op1
+	echo "0x0.st ------> "$op2
 }
+
 
 ##################################################
 #             End of Custom Functions            #
@@ -91,7 +93,7 @@ START=$(date +"%s");
 END=$(date +"%s")
 DIFF=$(($END - $START))
 
-version=$(grep "^CONFIG_LOCALVERSION" arch/arm64/configs/X00T_defconfig | cut -d "=" -f2 | tr -d '"')
+wolf_version=$(grep "^CONFIG_LOCALVERSION" arch/arm64/configs/X00T_defconfig | cut -d "=" -f2 | tr -d '"')
 
 ##################################################
 #        DO NOT CHANGE BEYOND THIS POINT         #
@@ -158,12 +160,13 @@ else
     success=true;
 fi
 
+git clone https://github.com/WolfOSP/AnyKernel3.git
 echo -e "Copying kernel image";
 cp -v "${IMAGE}" "${ANYKERNEL}/";
 cd -;
 cd ${ANYKERNEL};
 mv Image.gz-dtb zImage
-zip -r9 ${FINAL_ZIP} *;
+zip -r9 ${FINAL_ZIP} * -x .git -x README.md;
 cd -;
 
 if [ -f "$FINAL_ZIP" ];
@@ -184,10 +187,12 @@ if [[ ${success} == true ]]; then
 curl -F chat_id=$CHAT_ID -F document=@"${ZIP_DIR}/$ZIPNAME" -F caption="
 ♔♔♔♔♔BUILD-DETAILS♔♔♔♔♔
 Make-Type  : HMP(non-SAR)
-version    : $(echo $version)
+version    : $(echo $wolf_version)
 Build-Time : $time
 Changelog  : 
 $(git log --pretty=format:'%h : %s' -5)" https://api.telegram.org/bot$BOT_API_KEY/sendDocument
+
+send_zip
 
 fi
 else
