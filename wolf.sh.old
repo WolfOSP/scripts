@@ -18,17 +18,19 @@ sed -e 's/gcc//')";
 	fi
 }
 
-#function transfer() {
-#	zipname="$(echo $1 | awk -F '/' '{print $NF}')";
-#	url="$(curl -# -T $1 https://transfer.sh)";
-#	printf '\n';
-#	echo -e "Download ${zipname} at ${url}";
-#}
+function send_zip() {
+	op1=$(curl --max-time 20 --upload-file $ZIP_DIR/$ZIPNAME https://transfer.sh/ 2> /dev/null)
+	op2=$(curl --max-time 20 -F file=@$ZIP_DIR/$ZIPNAME https://0x0.st 2> /dev/null)
+	echo "transfer.sh -> "$op1
+	echo "0x0.st ------> "$op2
+}
 
 if [[ -z ${KERNELDIR} ]]; then
     echo -e "Please set KERNELDIR";
     exit 1;
 fi
+
+#https://github.com/WolfOSP/AnyKernel3.git
 
 export DEVICE=$1;
 if [[ -z ${DEVICE} ]]; then
@@ -44,8 +46,8 @@ export ANYKERNEL="${KERNELDIR}/AnyKernel3/";
 export AROMA="${KERNELDIR}/aroma/";
 export ARCH="arm64";
 export SUBARCH="arm64";
-#export KBUILD_BUILD_USER="ADevDX"
-export KBUILD_BUILD_HOST="TeamQuantum"
+export KBUILD_BUILD_USER="Wolf"
+export KBUILD_BUILD_HOST="WolfOSP"
 export TOOLCHAIN="${HOME}/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/";
 export DEFCONFIG="X00T_defconfig";
 export ZIP_DIR="${HOME}/${KERNELDIR}/files";
@@ -99,9 +101,9 @@ if [[ "$@" =~ "clean" ]]; then
     ${MAKE} clean
 fi
 
-#curl -s -X POST https://api.telegram.org/bot$BOT_API_KEY/sendMessage -d text="#Awoo 
-#Build Scheduled for $KERNELNAME Kernel 
-#Will be posted when testing is over.." -d chat_id="-1001287030751"
+curl -s -X POST https://api.telegram.org/bot$BOT_API_KEY/sendMessage -d text="#Awoo 
+Build Scheduled for $KERNELNAME Kernel 
+Will be posted when testing is over.." -d chat_id="-1001287030751"
 ${MAKE} $DEFCONFIG;
 START=$(date +"%s");
 echo -e "Using ${JOBS} threads to compile"
@@ -118,7 +120,7 @@ echo -e "Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.";
 
 if [[ ! -f "${IMAGE}" ]]; then
     echo -e "Build failed :P";
-    #curl -s -X POST https://api.telegram.org/bot$BOT_API_KEY/sendMessage -d text="$KERNELNAME Kernel stopped due to an error" -d chat_id="585730571"
+    curl -s -X POST https://api.telegram.org/bot$BOT_API_KEY/sendMessage -d text="$KERNELNAME Kernel stopped due to an error" -d chat_id="585730571"
     success=false;
     exit 1;
 else
@@ -141,23 +143,17 @@ if [[ ${success} == true ]]; then
     echo -e "UPLOAD SUCCESSFUL";
 
 #message="Wolf Kernel - HMP Version."
-#time="Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+time="Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
 
-#curl -F chat_id=$CHAT_ID -F document=@"${ZIP_DIR}/$ZIPNAME" -F caption="
-#♔♔♔♔♔♔♔BUILD-DETAILS♔♔♔♔♔♔♔
-#  Make-Type  : HMP(non-SAR)
-#⌚ Build-Time : $time
-#$(git log --pretty=format:'%h : %s' -5)" https://api.telegram.org/bot$BOT_API_KEY/sendDocument
+curl -F chat_id=$CHAT_ID -F document=@"${ZIP_DIR}/$ZIPNAME" -F caption="
+♔♔♔♔♔BUILD-DETAILS♔♔♔♔♔
+Make-Type  : HMP(non-SAR)
+Version    : $(grep "^CONFIG_LOCALVERSION" arch/arm64/configs/X00T_defconfig | cut -d "=" -f2 | tr -d '"')
+Build-Time : $time
+Changelog
+$(git log --pretty=format:'%h : %s' -5)" https://api.telegram.org/bot$BOT_API_KEY/sendDocument
 
-function transfer() {
-#Uncomment this when transfer.sh is up
-#	op1=$(curl --upload-file $ZIP_DIR/$ZIPNAME https://transfer.sh/)
-	op2=$(curl -F file=@$ZIP_DIR/$ZIPNAME https://0x0.st)
-#	echo "transfer.sh -> "$op1
-	echo "0x0.st ------> "$op2
-}
-
-transfer
+send_zip
 
 fi
 else
