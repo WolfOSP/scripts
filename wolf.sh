@@ -158,6 +158,7 @@ then
 <b>Build Log:</b>
 <a href='$buildlog'>build log</a>"
 
+	send_sticker "CAACAgUAAxkBAAJI316ZisRXlJAaEH4UtPsMqFLEFNxCAAIJAQACLG6EE0S3mUAqU7snGAQ"
 	send_doc "$FINAL_ZIP" "$caption_"
 	send_zip
 	rm -rf "$FINAL_ZIP"
