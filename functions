@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+##################################################
+#    Custom Functions for Kernel Build Script    #
+##################################################
+
+function check_toolchain() {
+
+    export TC="$(find ${TOOLCHAIN}/bin -type f -name *-gcc)";
+
+  if [[ -f "${TC}" ]]; then
+    export CROSS_COMPILE="${TOOLCHAIN}/bin/$(echo ${TC} | awk -F '/' '{print $NF'} |\
+                                                                               sed -e 's/gcc//')";
+    echo -e "Using toolchain: $(${CROSS_COMPILE}gcc --version | head -1)";
+  else
+    echo -e "No suitable toolchain found in ${TOOLCHAIN}";
+    exit 1;
+  fi
+}
+
+function send_zip() {
+	op1=$(curl --max-time 20 --upload-file $ZIP_DIR/$ZIPNAME https://transfer.sh/ 2> /dev/null)
+	op2=$(curl --max-time 20 -F file=@$ZIP_DIR/$ZIPNAME https://0x0.st 2> /dev/null)
+	echo "transfer.sh -> "$op1
+	echo "0x0.st ------> "$op2
+}
+
+function send_doc() {
+	curl -F chat_id="$CHAT_ID" -F document=@"$1" -F caption="$2" -F "parse_mode=HTML" https://api.telegram.org/bot"$BOT_API_KEY"/sendDocument &> /dev/null
+}
+
+function send_msg() {
+	curl -s -X POST https://api.telegram.org/bot"$BOT_API_KEY"/sendMessage  -d "parse_mode=HTML" -d text="$1" -d chat_id="$CHAT_ID" &> /dev/null
+}
+
+function send_sticker() {
+
+	curl -s -X POST https://api.telegram.org/bot"$BOT_API_KEY"/sendSticker -d sticker="$1" -d chat_id="$CHAT_ID" &> /dev/null
+}
+
+function check_var() {
+
+ if [[ -z ${!1} ]]; then
+    echo "$1 is not set"
+    exit 1
+ else
+    echo "$1 is set"
+ fi
+}
+
+function deldog() { (
+    for BINARY in curl jq; do
+        command -v ${BINARY} &>/dev/null || {
+            echo "ERROR: ${BINARY} is not installed" >&2
+            exit 1
+        }
+    done
+    [[ -z ${HASTE_URL} ]] && HASTE_URL=https://del.dog
+    [[ -n ${DEL_DOG_API_KEY} && ${HASTE_URL} =~ del ]] && CURL_ARGS=(--header "X-api-key: ${DEL_DOG_API_KEY}")
+    RESULT=$(curl -sf --data-binary @"${1:--}" "${CURL_ARGS[@]}" "${HASTE_URL}"/documents) 
+    echo "${HASTE_URL}/$(jq -r .key <<<"${RESULT}")"
+); }
+
+##################################################
+#             End of Custom Functions            #
+##################################################
