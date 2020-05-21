@@ -25,12 +25,14 @@ function send_zip() {
 	echo "0x0.st ------> "$op2
 }
 
-function send_doc() {
-	curl -F chat_id="$CHAT_ID" -F document=@"$1" -F caption="$2" -F "parse_mode=HTML" https://api.telegram.org/bot"$BOT_API_KEY"/sendDocument &> /dev/null
+function send_msg() {
+
+	curl -s -X POST https://api.telegram.org/bot"$BOT_API_KEY"/sendMessage  -d "parse_mode=HTML" -d text="$1" -d chat_id="$CHAT_ID" &> /dev/null
 }
 
-function send_msg() {
-	curl -s -X POST https://api.telegram.org/bot"$BOT_API_KEY"/sendMessage  -d "parse_mode=HTML" -d text="$1" -d chat_id="$CHAT_ID" &> /dev/null
+function send_doc() {
+
+    curl -F chat_id="$CHAT_ID" -F document=@"$1" -F caption="$2" -F "parse_mode=HTML" https://api.telegram.org/bot"$BOT_API_KEY"/sendDocument &> /dev/null
 }
 
 function send_sticker() {
@@ -49,6 +51,7 @@ function check_var() {
 }
 
 function deldog() { (
+
     for BINARY in curl jq; do
         command -v ${BINARY} &>/dev/null || {
             echo "ERROR: ${BINARY} is not installed" >&2
@@ -60,6 +63,21 @@ function deldog() { (
     RESULT=$(curl -sf --data-binary @"${1:--}" "${CURL_ARGS[@]}" "${HASTE_URL}"/documents) 
     echo "${HASTE_URL}/$(jq -r .key <<<"${RESULT}")"
 ); }
+
+function changelog-generator() {
+
+    export NEXT=$(date +%F)
+    export SINCE="last month"
+    export UNTIL=$NEXT
+    echo "CHANGELOG"
+    echo ----------------------
+    git log --no-merges --since="${SINCE}" --until="${UNTIL}" --format="%cd" --date=short | sort -u -r | while read DATE ; do
+        echo
+        echo [$DATE]
+        GIT_PAGER=cat git log --no-merges --format=" * %s" --since="$DATE 00:00:00" --until="$DATE 24:00:00"
+    done
+}
+
 
 ##################################################
 #             End of Custom Functions            #
